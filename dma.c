@@ -82,8 +82,8 @@ void DMA0_Init() {
 void DMA1_Init() {
 	DCH1ECON	= 27 << 8;	// set DMA1 to trigger on UART1
 	DCH1ECONSET	= 0x10;		// en cell transfer on IRQ
-	DCH1SSA		= KVA_TO_PA(&gRecieveLightTimerReset);	// set source
-	DCH1DSA		= KVA_TO_PA(&TMR2);	// set destination (upper half of timer 2. is this causing errors?)
+	DCH1SSA		= KVA_TO_PA( &gRecieveLightTimerReset );	// set source
+	DCH1DSA		= KVA_TO_PA( &TMR2 );	// set destination (upper half of timer 2. is this causing errors?)
 	DCH1SSIZ	= 4;		// set source size
 	DCH1DSIZ	= 4;		// set dest size
 	DCH1CSIZ	= 4;		// set cell size
@@ -93,24 +93,37 @@ void DMA1_Init() {
 void DMA2_Init(){
 	DCH2ECON	= 27 << 8;	// set DMA2 to trigger on UART1
 	DCH2ECONSET	= 0x10;		// en cell transfer on IRQ
-	DCH2SSA		= KVA_TO_PA(&gRecieveLightBits); // set source to LED mask variable
-	DCH2DSA		= KVA_TO_PA(&LATBSET);	// set the dest to LATB pins
+	DCH2SSA		= KVA_TO_PA( &gRecieveLightBits ); // set source to LED mask variable
+	DCH2DSA		= KVA_TO_PA( &LATBSET );	// set the dest to LATB pins
 	DCH2SSIZ	= 2;		// set source size
 	DCH2DSIZ	= 2;		// set dest size
 	DCH2CSIZ	= 2;		// set cell size
 	DCH2CON		= 0x90; }	// en DMA2, with auto re-enable
 
-// initialize DMA channel 3 ( recieve LED clr )
+// initialize DMA Channel 3 ( recieve LED clr )
 void DMA3_Init() {
 	DCH3ECON	= 12 << 8;	// set DMA3 to trigger on timer 3
 	DCH3ECONSET	= 0x10;		// en cell transfer on IRQ
-	DCH3SSA		= KVA_TO_PA(&grecieveLightBits); // set source to LED Mask variable
-	DCH3DSA		= KVA_TO_PA(&LATBCLR);	// set dest bits to LATB pins
+	DCH3SSA		= KVA_TO_PA( &grecieveLightBits ); // set source to LED Mask variable
+	DCH3DSA		= KVA_TO_PA( &LATBCLR );	// set dest bits to LATB pins
 	DCH3SSIZ	= 2;		// set source size
 	DCH3DSIZ	= 2;		// set dest size
 	DCH3DSIZ	= 2;		// set cell size
-	DCH3CON		= 0x90;		// en DMA3 with auto re-enable
-void DMA0_Send_Set();
+	DCH3CON		= 0x90;	}	// en DMA3 with auto re-enable
+
+// Sets DMA0 to send
+void DMA0_Send_Set() {
+	gBufferSending	= 1;
+	DCH0INTCLR	= 0x8;
+	DCH0ECONCLR	= 0xFF << 8;
+	DCH0ECONSET	= 28 <, 8;
+	DCH0SSA		= KVA_TO_PA( gBufferStart );
+	DCH0DSA		= KVA_TO_PA( &U1TXREG );
+	DCH0SSIZ	= (uint8_t)( BLOCK_SIZE );
+	DCH0DSIZ	= 1;
+	DCH0CONSET	= 0x90; }
+
+// Sets DMA0 to recieve
 void DMA0_Recv_Set();
 
 
