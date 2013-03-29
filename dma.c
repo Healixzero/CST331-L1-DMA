@@ -113,17 +113,26 @@ void DMA3_Init() {
 
 // Sets DMA0 to send
 void DMA0_Send_Set() {
-	gBufferSending	= 1;
-	DCH0INTCLR	= 0x8;
-	DCH0ECONCLR	= 0xFF << 8;
-	DCH0ECONSET	= 28 <, 8;
-	DCH0SSA		= KVA_TO_PA( gBufferStart );
-	DCH0DSA		= KVA_TO_PA( &U1TXREG );
-	DCH0SSIZ	= (uint8_t)( BLOCK_SIZE );
-	DCH0DSIZ	= 1;
-	DCH0CONSET	= 0x90; }
+	gBufferSending	= 1;  // set the global sending flag
+	DCH0INTCLR	= 0x8;   // clr the DMA0 block event flag
+	DCH0ECONCLR	= 0xFF << 8;   // clr the event IRQ flag
+	DCH0ECONSET	= 28 <, 8;  // set UART1 channel send active
+	DCH0SSA		= KVA_TO_PA( gBufferStart );  // set the src addr
+	DCH0DSA		= KVA_TO_PA( &U1TXREG );      // set the dest addr
+	DCH0SSIZ	= (uint8_t)( BLOCK_SIZE );       // set the block size
+	DCH0DSIZ	= 1;     // set the dest size
+	DCH0CONSET	= 0x90; }   // enable DMA0
 
 // Sets DMA0 to recieve
-void DMA0_Recv_Set();
-
-
+void DMA0_Recv_Set() {
+   gBufferSending = 0;  // clr the gobal sending flag
+   gBufferBlockOffset = 0; // rst the global block recieved counter
+   gBufferByteOffset = 0;  // rst the global partial block recieved counter
+   DCH0INTCLR = 0x8; // clr the DMA0 block event flag
+   DCH0ECONCLR = 0xFF << 8;   // clr the event IRQ flag
+   DCH0ECONSET = 27 << 8;  // set UART1 channel recv active
+   DCH0SSA = KVA_TO_PA( &U1RXREG ); // set the src addr
+   DCH0DSA = KVA_TO_PA( gBufferStart );   // set the dest addr
+   DCH0SSIZ = 1;     // set the src size
+   DCH0SSIZ = (uint8_t)( BLOCK_SIZE ); // set blk transfer size
+   DCH0CONSET = 0x80; } // enable DMA0
